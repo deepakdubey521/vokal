@@ -31,10 +31,10 @@ public class WordsListActivity extends AppCompatActivity {
 
     private static final String TAG = WordsListActivity.class.getSimpleName();
     // @Bind(R.id.word_list)
-    RecyclerView mWordListView;
+    RecyclerView wordListView;
 
-    WordsListAdapter mWordListAdapter;
-    LinearLayoutManager mLayoutManager;
+    WordsListAdapter wordListAdapter;
+    LinearLayoutManager layoutManager;
     List<Card> cardList = new ArrayList<>();
 
 
@@ -42,16 +42,16 @@ public class WordsListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_word_list);
-        mWordListView = (RecyclerView) findViewById(R.id.word_list);
+        wordListView = (RecyclerView) findViewById(R.id.word_list);
 
         Intent intent = getIntent();
         intent.getData();
         populateData(intent.getData());
 
-        mWordListAdapter = new WordsListAdapter(getApplicationContext(), cardList);
-        mWordListView.setAdapter(mWordListAdapter);
-        mLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
-        mWordListView.setLayoutManager(mLayoutManager);
+        wordListAdapter = new WordsListAdapter(cardList);
+        wordListView.setAdapter(wordListAdapter);
+        layoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+        wordListView.setLayoutManager(layoutManager);
     }
 
     @Override
