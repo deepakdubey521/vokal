@@ -47,16 +47,19 @@ public class Card implements Comparable<Card> {
             this.to = to;
         }
 
-        public static Card.Range getRangeForValue(int value) {
+        public static Range getRangeForValue(int value) {
             int from, to;
-            if (value % 10 == 0) {
+            if (value < 10) {
+                from = 1;
+                to = 10;
+            } else if (value % 10 == 0) {
                 to = (value / 10) * 10;
                 from = to - 9;
             } else {
-                from = (value / 10) * 10;
+                from = (value / 10) * 10 + 1;
                 to = from + 9;
             }
-            return new Card.Range(from, to);
+            return new Range(from, to);
         }
 
         @Override
