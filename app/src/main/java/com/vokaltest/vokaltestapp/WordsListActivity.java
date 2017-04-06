@@ -2,24 +2,30 @@ package com.vokaltest.vokaltestapp;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.vokaltest.vokaltestapp.model.CardCreator;
+import com.vokaltest.vokaltestapp.model.Card;
+import com.vokaltest.vokaltestapp.model.Word;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import adapter.WordsListAdapter;
+
+import static com.vokaltest.vokaltestapp.model.Card.Range.getRangeForValue;
 
 public class WordsListActivity extends AppCompatActivity {
 
@@ -29,8 +35,7 @@ public class WordsListActivity extends AppCompatActivity {
 
     WordsListAdapter mWordListAdapter;
     LinearLayoutManager mLayoutManager;
-    List<CardObject> mCardList = new ArrayList<>();
-    ;
+    List<Card> cardList = new ArrayList<>();
 
 
     @Override
@@ -43,7 +48,7 @@ public class WordsListActivity extends AppCompatActivity {
         intent.getData();
         populateData(intent.getData());
 
-        mWordListAdapter = new WordsListAdapter(getApplicationContext(), mCardList);
+        mWordListAdapter = new WordsListAdapter(getApplicationContext(), cardList);
         mWordListView.setAdapter(mWordListAdapter);
         mLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
         mWordListView.setLayoutManager(mLayoutManager);
@@ -55,15 +60,20 @@ public class WordsListActivity extends AppCompatActivity {
 
     }
 
-    private void populateData(Uri data) {
+    private void populateData(final Uri data) {
         Log.d("image selected path", data.getPath());
-        try {
-            readTextFromUri(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    readTextFromUri(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
     private void readTextFromUri(Uri uri) throws IOException {
         InputStream inputStream = getContentResolver().openInputStream(uri);
@@ -72,110 +82,37 @@ public class WordsListActivity extends AppCompatActivity {
         String line;
         while ((line = reader.readLine()) != null) {
             stringBuilder.append(" " + line);
-
         }
 
         formatData(stringBuilder);
-
     }
 
     private void formatData(StringBuilder stringBuilder) {
-        String[] stringData = stringBuilder.toString().toLowerCase().split(" ");
-        HashMap<String, Integer> hashMap = new HashMap<>();
-        for (String a : stringData) {
-            if (hashMap.get(a) != null) {
-                int value = hashMap.get(a);
-                ++value;
-                hashMap.put(a, value);
+        String[] words = stringBuilder.toString().toLowerCase().split(" ");
+        HashMap<String, Integer> wordMap = new HashMap<>();
+        for (String word : words) {
+            if (wordMap.get(word) == null) {
+                wordMap.put(word, 1);
             } else {
-                hashMap.put(a, 1);
+                wordMap.put(word, wordMap.get(word) + 1);
             }
         }
 
-        ArrayList<WordsData> wordList = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : hashMap.entrySet()) {
-            wordList.add(new WordsData(entry.getKey(), entry.getValue()));
+        ArrayList<Word> wordList = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : wordMap.entrySet()) {
+            wordList.add(new Word(entry.getKey(), entry.getValue()));
         }
         Collections.sort(wordList);
 
-        String range = "";
-        CardDataCreator cardDataCreator = new CardDataCreator();
-        for (WordsData wordsData : wordList) {
-            range = getRangeForValue(wordsData.mValue);
-            CardObject cardObject = cardDataCreator.getCardObject(range);
-            cardObject.wordsDatas.add(wordsData);
+        CardCreator cardCreator = CardCreator.getInstance();
+        for (Word word : wordList) {
+            Card card = cardCreator.getCardObject(getRangeForValue(word.getCount()));
+            card.addWordsData(word);
         }
 
-
-        Collection<CardObject> cardObjectList = cardDataCreator.getCards().values();
-        mCardList.addAll(cardObjectList);
-        Collections.reverse(mCardList);
+        cardList.clear();
+        cardList.addAll(cardCreator.getCards().values());
+        Collections.sort(cardList);
     }
-
-    String getRangeForValue(int value) {
-        int initialRange = 10;
-        int lastRange = 10;
-        int res = value / initialRange;
-        if (res >= initialRange) {
-            initialRange = initialRange * initialRange;
-        } else if (res < initialRange) {
-            initialRange = (res * initialRange);
-        }
-        lastRange = initialRange + 10;
-
-        return (initialRange + 1) + " - " + lastRange;
-    }
-
-
-    String getRange(int value) {
-
-        int result = value / 10;
-
-        switch (result) {
-            case 0:
-                return "00 - 10";
-            case 1:
-                return "11 - 20";
-            case 2:
-                return "21 - 30";
-            case 3:
-                return "31 - 40";
-            case 4:
-                return "41 - 50";
-            case 5:
-                return "51 - 60";
-            case 6:
-                return "61 - 70";
-            case 7:
-                return "71 - 80";
-            case 8:
-                return "81 - 90";
-            case 9:
-                return "91 - 100";
-            case 10:
-                return "101 - 110";
-            case 11:
-                return "111 - 120";
-            case 12:
-                return "121 - 130";
-            case 13:
-                return "131 - 140";
-            case 14:
-                return "141 - 150";
-            case 15:
-                return "151 - 160";
-            case 16:
-                return "161 - 170";
-            case 17:
-                return "171 - 180";
-            case 18:
-                return "181 - 190";
-            case 19:
-                return "191 - 200";
-        }
-
-        return "";
-    }
-
 
 }

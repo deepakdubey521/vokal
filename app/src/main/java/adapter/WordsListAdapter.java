@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.vokaltest.vokaltestapp.CardObject;
+import com.vokaltest.vokaltestapp.model.Card;
 import com.vokaltest.vokaltestapp.R;
 
 import java.util.ArrayList;
@@ -21,12 +21,12 @@ public class WordsListAdapter extends RecyclerView.Adapter<WordsListAdapter.View
 
     private static final String TAG = "NumberListAdapter";
     private Context mContext;
-    private List<CardObject> mCardList = new ArrayList<CardObject>();
+    private List<Card> cardList = new ArrayList<Card>();
 
 
-    public WordsListAdapter(Context context, List<CardObject> cardObjectList) {
+    public WordsListAdapter(Context context, List<Card> cardList) {
         mContext = context;
-        mCardList = cardObjectList;
+        this.cardList = cardList;
 
     }
 
@@ -42,19 +42,19 @@ public class WordsListAdapter extends RecyclerView.Adapter<WordsListAdapter.View
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        CardObject cardObject = (CardObject) mCardList.get(position);
-        holder.mWordHeadline.setText(cardObject.range);
-        holder.mWordData.setText(cardObject.toString());
+        Card card = cardList.get(position);
+        holder.range.setText(card.getRange().toString());
+        holder.words.setText(card.toString());
     }
 
     @Override
     public int getItemCount() {
         //hack it to double
-        return mCardList.size();
+        return cardList.size();
     }
 
     public void clearData() {
-        mCardList.clear();
+        cardList.clear();
         notifyDataSetChanged();
     }
 
@@ -62,10 +62,10 @@ public class WordsListAdapter extends RecyclerView.Adapter<WordsListAdapter.View
 
 
         @Bind(R.id.word_headline)
-        TextView mWordHeadline;
+        TextView range;
 
         @Bind(R.id.words_data)
-        TextView mWordData;
+        TextView words;
 
 
         public ViewHolder(View v) {
